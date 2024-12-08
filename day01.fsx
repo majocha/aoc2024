@@ -3,7 +3,7 @@
 open FSharpPlus
 
 let xs, ys =
-    System.IO.File.ReadAllLines("day1.txt")
+    System.IO.File.ReadAllLines("day01.txt")
     |> List.ofArray
     |> map (sscanf "%d   %d") |> unzip
 
