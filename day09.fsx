@@ -34,3 +34,51 @@ let rec checksum result i = function
         checksum result (i + 1) blocks
 
 let part1 = checksum 0L 0 blocks
+
+
+module Part2 =
+    let spaces =
+        [
+            let mutable current = 0
+            for i, d in digits |> List.indexed do
+                if not (even i) then
+                    yield current, d
+                current <- current + d
+        ]
+    
+    let files =
+        [
+            let mutable current = 0
+            for i, d in digits |> List.indexed do
+                if even i then
+                    yield (i / 2), (current, d)
+                current <- current + d
+        ] |> List.rev
+
+    let rec move spaces result = function
+        | [] -> result
+        | (fid, (start, length)) as file :: files ->
+            match spaces |> List.tryFindIndex (fun (start', length') -> start' < start && length' >= length) with
+            | Some i ->
+                let start', length' = spaces[i]
+                let spaces =
+                    if length' = length then
+                        spaces |> List.removeAt i
+                    else
+                        let spaces = spaces |> List.removeAt i
+                        let newSpace = start' + length, length' - length
+                        newSpace :: spaces
+                let result = (fid, (start', length)) :: result
+                let spaces = spaces |> List.sortBy fst
+                move spaces result files
+            | _ ->
+                move spaces (file :: result) files
+
+    let checksum files =
+        seq {
+            for fid, (start, length) in files do
+                for i in start .. start + length - 1 do
+                    yield int64 (i * fid)
+        } |> Seq.sum
+
+    let part2 = move spaces [] files |> checksum
