@@ -12,9 +12,9 @@ let moves (x, y) =
 let rec reachableFrom p =
     [
         for p1, v in moves p do
-            if v = 9 then p1 else
+            if v = 9 then 1 else
                 yield! reachableFrom p1
-    ] |> Set.ofList
+    ] // |> Set.ofList
 
 let zeros =
     seq {
@@ -23,4 +23,4 @@ let zeros =
             if v = 0 then (x, y)
     }
 
-zeros |> Seq.map (reachableFrom >> Set.count) |> Seq.sum
+zeros |> Seq.map (reachableFrom >> List.sum) |> Seq.sum
