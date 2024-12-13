@@ -1,35 +1,38 @@
 #r "nuget: FSharpPlus"
+#r "nuget: MathNet.Numerics.FSharp, 5.0.0"
 open FSharpPlus
 open System
 open System.IO
+open MathNet.Numerics.LinearAlgebra
 
-let input = System.IO.File.OpenText "day13.txt"
-
-let configs =
+let systems =
     [
+        use input = System.IO.File.OpenText "day13.txt"
         while not input.EndOfStream do
             let ax, ay = input.ReadLine() |> sscanf "Button A: X+%d, Y+%d"
             let bx, by = input.ReadLine() |> sscanf "Button B: X+%d, Y+%d"
             let px, py =input.ReadLine() |> sscanf "Prize: X=%d, Y=%d"
 
-            yield (ax, bx, px), (ay, by, py)
+            let A = 
+                matrix
+                 [[double ax; double bx]
+                  [double ay; double by]]
+
+            let b = vector [double px + 10000000000000.0; double py + 10000000000000.0]
+
+            yield A, b
             try input.ReadLine() |> ignore with _ -> ()
-        input.Close()
     ]
 
-let combinations =
-    [
-        for a in 0 .. 100 do
-        for b in 0 .. 100 do
-            a, b
-    ] |> List.sortBy (fun (a, b) -> 3 * a + b)
 
-let attempt ((ax, bx, px), (ay, by, py)) (na, nb) =
-    na * ax + nb * bx = px && na * ay + nb * by = py
+let isInteger (d: double) = Math.Abs(d - Math.Round d) < 0.01
 
-let best config =
-    combinations |> List.tryFind (attempt config)
+let good (v: double seq) = v |> Seq.forall isInteger
 
-let part1 = configs |> List.choose best |> List.sumBy (fun (a, b) -> 3 * a + b)
+[ for A, b in systems do
+    let result = A.Solve b
+    if good result then
+        result * vector [ 3.0; 1.0 ]
+] |> Seq.sum |> printfn "%.3f"
 
 
