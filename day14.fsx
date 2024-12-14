@@ -18,12 +18,14 @@ let pos t ((px, py), (vx, vy)) =
 
 let after t = input |> List.map (pos t)
 
-let res = after 100
-for y in 0 .. Y do
-    for x in 0 .. X do
-        let c = res |> List.filter ((=) (x,y)) |> List.length
-        if c = 0 then printf "." else printf $"{c}"
-    printfn ""
+let print t =
+    printfn $"t: {t}"
+    let res = after t
+    for y in 0 .. Y do
+        for x in 0 .. X do
+            let c = res |> List.filter ((=) (x,y)) |> List.length
+            if c = 0 then printf "." else printf $"{c}"
+        printfn ""
 
 let half X x =
     match sign (X / 2 - x) with
@@ -44,3 +46,20 @@ let part1 =
     List.countBy id
     |> List.map snd
     |> List.reduce ((*))
+
+let mad (xs: int list) =
+    let avg = xs |> List.map float |> List.average
+    (xs |> List.map float |> List.sumBy (fun x -> abs (x - avg))) / 500.
+
+let madxy ps =
+    let xs, ys = ps |> List.unzip
+    mad xs + mad ys
+
+let avgMad = 
+    Seq.initInfinite after |> Seq.take 1000 |> Seq.averageBy madxy
+
+let t = List.init 10_000 (after >> madxy) |> List.findIndex (fun m -> m < 26.)
+
+print t
+
+
